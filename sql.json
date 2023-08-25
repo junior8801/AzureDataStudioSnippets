@@ -1,0 +1,590 @@
+{
+	// Place your snippets for sql here. Each snippet is defined under a snippet name and has a prefix, body and 
+	// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the 
+	// same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"prefix": "sql-log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"sql - View Header Comment": {
+		"prefix": "sql-sqlViewHeaderComment",
+		"body": [
+		"/* v_LP_ ",
+		"",
+		"Requestor: ", 
+		"Author: Jared Duquette ",
+		"Consuming Platform: ",
+		"Created on: MM-DD-YY",
+		"",
+		"Purpose:",
+		"",
+		"",
+		"*****Change Log*****",
+		"",
+		"Last Update        Name             Change Summary",
+		"MM-DD-YY           DUQ               summaryHere",
+		"",
+		"",
+		"",
+		"*/ "
+		],
+		"description": "Provides standard view comment block"
+	},
+	"sql - Stored Proc Header Comment": {
+		"prefix": "sql-sqlCommentProcHeader",
+		"body": [
+			"/***************************************************************************************************",
+			"Procedure:          dbo.usp_DoSomeStuff",
+			"GitHub Repo:        PADNOS/Salesforce_Extensibility ",
+			"Create Date:        2018-01-25",
+			"Author:             Joe Expert",
+			"Description:        Verbose description of what the query does goes here. Be specific and don't be",
+			"\t\t\t\t\tafraid to say too much. More is better, than less, every single time. Think about",
+			"\t\t\t\t\t``what, when, where, how and why`` when authoring a description.",
+			"Call by:            [schema.usp_ProcThatCallsThis]",
+			"\t\t\t\t\t[Application Name]",
+			"\t\t\t\t\t[Job]",
+			"\t\t\t\t\t[PLC/Interface]",
+			"Affected table(s):  [schema.TableModifiedByProc1]",
+			"\t\t\t\t\t[schema.TableModifiedByProc2]",
+			"Used By:            Functional Area this is use in, for example, Payroll, Accounting, Finance",
+			"Parameter(s):       @param1 - description and usage",
+			"\t\t\t\t\t@param2 - description and usage",
+			"Usage:              EXEC dbo.usp_DoSomeStuff",
+			"\t\t\t\t\t@param1 = 1,",
+			"\t\t\t\t\t@param2 = 3,",
+			"\t\t\t\t\t@param3 = 2",
+			"\t\t\t\t\tAdditional notes or caveats about this object, like where is can and cannot be run, or",
+			"\t\t\t\t\tgotchas to watch for when using it.",
+			"****************************************************************************************************",
+			"SUMMARY OF CHANGES",
+			"Date(yyyy-mm-dd)    Author              Comments",
+			"------------------- ------------------- ------------------------------------------------------------",
+			"2012-04-27          John Usdaworkhur    Move Z <-> X was done in a single step. Warehouse does not",
+			"\t\t\t\t\tallow this. Converted to two step process.",
+			"\t\t\t\t\tZ <-> 7 <-> X",
+			"\t\t\t\t\t1) move class Z to class 7",
+			"\t\t\t\t\t2) move class 7 to class X",
+			"",
+			"2018-03-22          Maan Widaplan       General formatting and added header information.",
+			"2018-03-22          Maan Widaplan       Added logic to automatically Move G <-> H after 12 months.",
+			"***************************************************************************************************/"
+		],
+		"description": "Header comment block for stored procs"
+	},
+	"sql - Recent Query": {
+		"prefix": "sql-sqlRecentQuery",
+		"body": [
+			"SELECT dest.TEXT AS [Query],",
+			"deqs.execution_count [Count],",
+			"deqs.last_execution_time AS [Time]",
+			"FROM sys.dm_exec_query_stats AS deqs",
+			"CROSS APPLY sys.dm_exec_sql_text(deqs.sql_handle) AS dest",
+			"ORDER BY deqs.last_execution_time DESC"
+		],
+		"description": "Provides list of recent query execution."
+	}, 
+	"sql - Row Count for Table": {
+		"prefix": "sql-sqlRowCounts", 
+		"body": [
+			"-- Performs a full table scan. Slow on large tables.",
+			"SELECT COUNT(*) FROM tableName ",
+			"-- Fast way to retrieve row count. Depends on statistics and is inaccurate.",
+			"-- Run DBCC UPDATEUSAGE(Database) WITH COUNT_ROWS, which can take significant time for large tables.",
+			"SELECT CONVERT(bigint, rows)",
+			"FROM sysindexes",
+			"WHERE id = OBJECT_ID('tableName')",
+			"AND indid < 2",
+			"-- The way the SQL management studio counts rows (look at table properties, storage, row count). Very fast, but still an approximate number of rows.",
+			"SELECT CAST(p.rows AS float)",
+			"FROM sys.tables AS tbl",
+			"INNER JOIN sys.indexes AS idx ON idx.object_id = tbl.object_id and idx.index_id < 2",
+			"INNER JOIN sys.partitions AS p ON p.object_id=CAST(tbl.object_id AS int)",
+			"AND p.index_id=idx.index_id",
+			"WHERE ((tbl.name=N'tableName'",
+			"AND SCHEMA_NAME(tbl.schema_id)='dbo'))",
+			"-- Quick (although not as fast as method 2) operation and equally important, reliable.",
+			"SELECT SUM (row_count)",
+			"FROM sys.dm_db_partition_stats",
+			"WHERE object_id=OBJECT_ID('Transactions')  ",
+			"AND (index_id=0 or index_id=1);"
+		],
+		"description": "4 ways to get row count on large tables"
+	}, 
+	"sql - Create db schema": {
+		"prefix": "sql-sqlCreateSchema", 
+		"body": [
+			"CREATE SCHEMA [schemaNameHere];", 
+			"", 
+			"-- Run this query to see schema", 
+			"-- SELECT * FROM sys.schemas;"
+		], 
+		"description": "Create and view db schema."
+	}, 
+	"sql - Data stuff": {
+		"prefix": "sql-sqlDataTypeInfo", 
+		"body": [
+			"SELECT",
+			"\tCOLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, COLLATION_NAME",
+			"\t-- distinct TABLE_SCHEMA, TABLE_NAME",
+			"FROM INFORMATION_SCHEMA.COLUMNS",
+			"WHERE",
+			"\tTABLE_SCHEMA IN ('')",
+			"\tAND TABLE_NAME IN ('')",  
+			"\tAND COLUMN_NAME IN ('')"
+		], 
+		"description": "What is the collation/data type length for a column?"
+	}, 
+	"sql - Index info": {
+		"prefix": "sql-sqlIndexInfo", 
+		"body": [
+			"SELECT TableName = t.name, IndexName = ind.name, IndexId = ind.index_id, ColumnId = ic.index_column_id, ColumnName = col.name",
+			"--,ind.*, ic.*, col.* ",
+			"FROM sys.indexes AS ind ",
+			"INNER JOIN sys.index_columns ic ON ( ind.object_id = ic.object_id and ind.index_id = ic.index_id )",
+			"INNER JOIN sys.columns AS col ON ( ic.object_id = col.object_id and ic.column_id = col.column_id )",
+			"INNER JOIN sys.tables AS t ON ( ind.object_id = t.object_id )",
+			"ORDER BY t.name, ind.name, ind.index_id, ic.index_column_id;"
+		],
+		"description": "What index are there - provides the names of index for quick alter"
+	}, 
+	"sql - MERGE statement": {
+		"prefix": "sql-sqlMERGE",
+		"body": [
+			"MERGE target_schema.target_table AS tgt ",
+			"\tUSING source_schema.staging AS srs ON ( ",
+			"\t\tsrs.id = tgt.id ",
+			"\t)",
+			"\tWHEN MATCHED THEN UPDATE ",
+			"\t\tSET ",
+			"\t\t\ttgt.column_name = srs.column_name",
+			"\tWHEN NOT MATCHED BY TARGET THEN ",
+			"\t\tINSERT ( ",
+			"\t\t\tcolumn_name ",
+			"\t\t)",
+			"\t\tVALUES ( ",
+			"\t\t\tsrs.column_name ",
+			"\t\t)",
+			"\tWHEN NOT MATCHED BY SOURCE THEN ",
+			"\t\tDELETE",
+			";"
+		],
+		"description": "MERGE statement syntax"
+	},
+	"sql - INSERT from SELECT": {
+		"prefix": "sql-sqlInsertSelect",
+		"body": [
+			"INSERT INTO target_table ( column_1, column_n )",
+			"SELECT column_1, column_N FROM source_table;"
+		],
+		"description": "INSERT from SELECT"
+	}, 
+	"sql - Try/Catch": {
+		"prefix": "sql-sqlTryCatch",
+		"body": [
+			"DECLARE @debug BIT = 0;",
+			"BEGIN TRY",
+			"\tIF @debug = 1 RAISERROR(N'', 0, 1) WITH NOWAIT;",
+			"\tDECLARE @place_in_code NVARCHAR(MAX);",
+			"\tSET @place_in_code = '';",
+			"END TRY",
+			"BEGIN CATCH",
+			"\tPRINT ERROR_MESSAGE();",
+			"\tPRINT @place_in_code;",
+			"\tEXECUTE tools.usp_transformation_log",
+			"\t\t@object_id = @@PROCID,", 
+			"\t\t@row_count = @@ROWCOUNT,",
+			"\t\t@message = @place_in_code",
+			"\t;",
+			"\tTHROW;",
+			"END CATCH" 
+		],
+		"description": "Wrap code in Try/Catch and write to custom transformation log for internal audits."
+	}, 
+	"sql - Drop Temp Table": {
+		"prefix": "sql-sqlDropTempTable",
+		"body": [
+			"IF OBJECT_ID(N'tempdb..#TableName') IS NOT NULL",
+			"BEGIN",
+			"DROP TABLE #TableName",
+			"END"
+		],
+		"description": "Drop a temp table"
+	}, 
+	"sql - Grant EXEC": {
+		"prefix": "sql-sqlGrantEXEC",
+		"body": [
+			"USE database_name;",
+			"",
+			"GRANT EXECUTE ON OBJECT::schema.usp_proc_name  ",
+			"\tTO user_name ",
+			"; "
+		], 
+		"description": "Grant execute on object to user via t-sql."
+	}, 
+	"sql - Space Used": {
+		"prefix": "sql-sqlTableSize", 
+		"body": [
+			"USE database_name;",
+			"EXEC sp_spaceused N'schema.table_name'; "
+		],
+		"description": "See size of a table."
+	}, 
+	"sql - Maintain Grain": {
+		"prefix": "sql-sqlMaintainGrain", 
+		"body": [
+			"INSERT INTO schema.destination_table ( column1, column2 )",
+			"\tSELECT s.column1, s.column2",
+			"\tFROM schema.source_table AS s",
+			"\t\tLEFT OUTER JOIN schema.destination_table AS d ON (",
+			"\t\t\ts.column1 = d.column1",
+			"\t\t\tAND s.column2 = d.column2",
+			"\t\t)",
+			"\tWHERE (",
+			"\t\td.column1 IS NULL",
+			"\t\tAND d.column2 IS NULL",
+			"\t)",
+			";",
+			"DELETE FROM schema.destination_table",
+			"\tWHERE",
+			"\tNOT EXISTS (",
+			"\t\t\tSELECT",
+			"\t\t\t\ts.column1,",
+			"\t\t\t\ts.column2",
+			"\t\t\tFROM schema.source_table AS s",
+			"\t\t\tWHERE",
+			"\t\t\t\ts.column1 = destination_table.column1",
+			"\t\t\t\tAND s.column2 = destination_table.column2",
+			"\t\t)",
+			";"
+		], 
+		"description": "Stop using MERGE. Use Insert and Delete to maintain grain instead."
+	},
+	"sql - UTC Datetime to Local": {
+		"prefix": "sql-sqlDateUTCtoLocal",
+		"body": [
+			"CONVERT( /*replace SYSUTCDDATETIME() with UTC column*/",
+			"\tdatetime,", 
+			"\tSWITCHOFFSET(",
+			"\t\tSYSUTCDATETIME(), ",
+			"\t\tDATEPART(TZOFFSET, SYSUTCDATETIME() AT TIME ZONE 'Eastern Standard Time')",
+			"\t)",
+			") as converted_datetime "
+		],
+		"description": "Stop using GETDATE(), use SYSUTCDATETIME() and use your UTC dates in local time."
+	},
+	"sql - List triggers on table": {
+		"prefix": "sql-sqlTriggerList",
+		"body": [
+			"SELECT /*list of triggers on table*/",
+			"\tsysobjects.name AS trigger_name ",
+			"\t,USER_NAME(sysobjects.uid) AS trigger_owner ",
+			"\t,s.name AS table_schema ",
+			"\t,OBJECT_NAME(parent_obj) AS table_name ",
+			"\t,OBJECTPROPERTY( id, 'ExecIsUpdateTrigger') AS isupdate ",
+			"\t,OBJECTPROPERTY( id, 'ExecIsDeleteTrigger') AS isdelete ",
+			"\t,OBJECTPROPERTY( id, 'ExecIsInsertTrigger') AS isinsert ",
+			"\t,OBJECTPROPERTY( id, 'ExecIsAfterTrigger') AS isafter ",
+			"\t,OBJECTPROPERTY( id, 'ExecIsInsteadOfTrigger') AS isinsteadof ",
+			"\t,OBJECTPROPERTY(id, 'ExecIsTriggerDisabled') AS [disabled] ",
+			"FROM sysobjects ",
+			"\tINNER JOIN sysusers ON sysobjects.uid = sysusers.uid ",
+			"\tINNER JOIN sys.tables t ON sysobjects.parent_obj = t.object_id ",
+			"\tINNER JOIN sys.schemas s ON t.schema_id = s.schema_id ",
+			"WHERE ",
+			"\tsysobjects.type = 'TR' ",
+			"\tAND t.name = 'tbl_name'"
+		], 
+		"description": "List triggers on a table for easy copy/paste into enable/disable."
+	},
+	"sql - Warehouse NULL id field error check": {
+		"prefix": "sql-sqlNULLlookupID",
+		"body": [
+			"BEGIN ",
+			"\tDROP TABLE IF EXISTS #null_lookup_id; ",
+			"\tCREATE TABLE #null_lookup_id (",
+			"\t\tid INT IDENTITY(0,1) PRIMARY KEY NOT NULL,", 
+			"\t\taudit_schema_name NVARCHAR(256),",
+			"\t\taudit_table_name NVARCHAR(256),",
+			"\t\taudit_column_name NVARCHAR(256), ", 
+			"\t\trecord_count INT", 
+			"\t);", 
+			"\tINSERT INTO #null_lookup_id ",
+			"\t\t(",
+			"\t\t\taudit_schema_name,",
+			"\t\t\taudit_table_name,",
+			"\t\t\taudit_column_name",
+			"\t\t)",
+			"\t\tSELECT",
+			"\t\t\tc.TABLE_SCHEMA,",
+			"\t\t\tc.TABLE_NAME,",
+			"\t\t\tc.COLUMN_NAME",
+			"\t\tFROM INFORMATION_SCHEMA.COLUMNS AS c ",
+			"\t\tWHERE",
+			"\t\t\tc.TABLE_SCHEMA IN ('schema_name')",
+			"\t\t\tAND c.TABLE_NAME IN ('fact_table')",
+			"\t\t\tAND (",
+			"\t\t\t\tc.COLUMN_NAME LIKE '%_id'",
+			"\t\t\t\tAND c.DATA_TYPE = 'int'",
+			"\t\t\t)",
+			"\t;",
+			"\tDECLARE @place_in_code NVARCHAR(MAX);",
+			"\tDECLARE @current_column INT = 0 ",
+			"\tDECLARE @max_column INT = (",
+			"\t\tSELECT MAX(id) ",
+			"\t\tFROM #null_lookup_id",
+			"\t)",
+			"\tDECLARE @current_column_name NVARCHAR(256);",
+			"\tDECLARE @current_schema_name NVARCHAR(256);",
+			"\tDECLARE @current_table_name NVARCHAR(256);",
+			"\tDECLARE @sql NVARCHAR(MAX);",
+			"\tDECLARE @record_count INT; ",
+			"\tWHILE @current_column <= @max_column ",
+			"\tBEGIN ",
+			"\t\tSET @current_schema_name = (",
+			"\t\t\tSELECT audit_schema_name ",
+			"\t\t\tFROM #null_lookup_id",
+			"\t\t\tWHERE id = @current_column",
+			"\t\t);",
+			"\t\tSET @current_table_name = (",
+			"\t\t\tSELECT audit_table_name ",
+			"\t\t\tFROM #null_lookup_id",
+			"\t\t\tWHERE id = @current_column",
+			"\t\t);",
+			"\t\tSET @current_column_name = (",
+			"\t\t\tSELECT audit_column_name ",
+			"\t\t\tFROM #null_lookup_id",
+			"\t\t\tWHERE id = @current_column",
+			"\t\t);",
+			"\t\tSET @sql = (",
+			"\t\t\t'UPDATE tgt ",
+			"\t\t\t\tSET ",
+			"\t\t\t\t\trecord_count = (",
+			"\t\t\t\t\t\tSELECT COUNT(*) ",
+			"\t\t\t\t\t\tFROM ' + @current_schema_name + '.' + @current_table_name + ' AS f ",
+			"\t\t\t\t\t\tWHERE ",
+			"\t\t\t\t\t\t\tf.' +  @current_column_name + ' IS NULL",
+			"\t\t\t\t\t)",
+			"\t\t\t\tFROM #null_lookup_id AS tgt ",
+			"\t\t\t\tWHERE ",
+			"\t\t\t\t\ttgt.audit_column_name = ''' + @current_column_name + ''';'",
+			"\t\t);",
+			"\t\tEXEC sp_executesql @sql;",
+			"\t\tSET @current_column = @current_column + 1;",
+			"\tEND ",
+			"\tIF (SELECT SUM(record_count) FROM #null_lookup_id) > 0 ",
+			"\tBEGIN;",
+			"\t\tTHROW 51000, N'NULL lookup IDs.', 0;",
+			"\tEND;",
+			"END "
+		],
+		"description": "Find and log instances where NULL record is found"
+	},
+	"sql - MS SQL SPROC": {
+		"prefix": "sql-mssproc",
+		"body": [
+			"IF OBJECT_ID('$3', 'P') IS NOT NULL",
+			"    DROP PROCEDURE $3;",
+			"GO",
+			"-- =======================================",
+			"-- Author:      Cliff Spital",
+			"-- Create date: $1",
+			"-- Description: $2",
+			"-- =======================================",
+			"CREATE PROCEDURE $3",
+			"    $4",
+			"AS",
+			"BEGIN",
+			"    SET NOCOUNT ON",
+			"",
+			"",
+			"END",
+			"GO"
+		],
+		"description": "Stubs out a new stored procedure."
+	},
+	"sql - MS SQL TABLE TYPE": {
+		"prefix": "sql-msttype",
+		"body": [
+			"IF TYPE_ID('[$1].[$2]') IS NOT NULL",
+			"    DROP TYPE [$1].[$2];",
+			"GO",
+			"CREATE TYPE [$1].[$2] AS TABLE",
+			"(",
+			"    $3",
+			")",
+			"GO"
+		],
+		"description": "Stubs out a new table type."
+	},
+	"sql - MS SQL TYPE": {
+		"prefix": "sql-msdtype",
+		"body": [
+			"CREATE TYPE [$1].[$2]",
+			"FROM $3",
+			"GO"
+		],
+		"description": "Stubs out a new type."
+	},
+	"sql - MS SQL TABLE": {
+		"prefix": "sql-mstbl",
+		"body": [
+			"IF OBJECT_ID('$1.$2') IS NOT NULL",
+			"    DROP TABLE $1.$2;",
+			"GO",
+			"CREATE TABLE [$1].[$2]",
+			"(",
+			"    $3",
+			") ON [PRIMARY]",
+			"GO"
+		],
+		"description": "Stubs out a new table"
+	},
+	"sql - MS FOREIGN KEY": {
+		"prefix": "sql-msfkey",
+		"body": [
+			"IF EXISTS (SELECT 1 FROM sys.objects WHERE name = 'FK_$2_$3' and [type] = 'F')",
+			"    ALTER TABLE [$1].[$2] DROP CONSTRAINT FK_$2_$3",
+			"GO",
+			"ALTER TABLE [$1].[$2]",
+			"ADD CONSTRAINT [FK_$2_$3] FOREIGN KEY([$3])",
+			"REFERENCES [$4].[$5] ([$6])",
+			"GO"
+		],
+		"description": "Stubs out a new foreign key constraint"
+	},
+	"sql - MS PRIMARY KEY": {
+		"prefix": "sql-mspkey",
+		"body": [
+			"ALTER TABLE [$1].[$2] ADD CONSTRAINT [PK_$2$3] PRIMARY KEY CLUSTERED",
+			"(",
+			"    $4",
+			") ON [PRIMARY]",
+			"GO"
+		],
+		"description": "Stubs out a new primary key constraint"
+	},
+	"sql - MS INDEX": {
+		"prefix": "sql-msindex",
+		"body": [
+			"CREATE INDEX IX_$1_$4 ON [$2].[$1] ([$4]);",
+			"GO"
+		],
+		"description": "Stubs out a new nonclustered index"
+	},
+	"sql - MS UNIQUE INDEX": {
+		"prefix": "sql-msuniq",
+		"body": [
+			"IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IXUniq_$2_$3')",
+			"    DROP INDEX [IXUniq_$2_$3] ON [$1].[$2]",
+			"GO",
+			"CREATE UNIQUE INDEX IXUniq_$2_$3 ON [$1].[$2]($3);",
+			"GO"
+		],
+		"description": "Stubs out a new unique index"
+	},
+	"sql - MS SCALAR FUNCTION": {
+		"prefix": "sql-msfns",
+		"body": [
+			"IF OBJECT_ID('$3') IS NOT NULL",
+    		"    DROP FUNCTION $3;",
+			"GO",
+			"-- =======================================",
+			"-- Author:      Cliff Spital",
+			"-- Create date: $1",
+			"-- Description: $2",
+			"-- =======================================",
+			"CREATE FUNCTION $3",
+			"(",
+			"    $4",
+			")",
+			"RETURNS $5",
+			"AS",
+			"BEGIN",
+			"",
+			"",
+			"END",
+			"GO"
+		],
+		"description": "Stubs out a new Scalar function"
+	},
+	"sql - MS IF": {
+		"prefix": "sql-msif",
+		"body": [
+			"IF ($1)",
+			"BEGIN;",
+			"    $2",
+			"END;"
+		]
+	},
+	"sql - MS TABLE MULTILINE FUNCTION":{
+		"prefix": "sql-msfnt",
+		"body": [
+			"IF OBJECT_ID('$3') IS NOT NULL",
+    		"    DROP FUNCTION $3;",
+			"GO",
+			"-- =======================================",
+			"-- Author:      Cliff Spital",
+			"-- Create date: $1",
+			"-- Description: $2",
+			"-- =======================================",
+			"CREATE FUNCTION $3",
+			"(",
+			"    $4",
+			")",
+			"RETURNS $5 TABLE (",
+			"$6",
+			")",
+			"AS",
+			"BEGIN",
+			"",
+			"",
+			"END",
+			"GO"
+		],
+		"description": "Stubs out a new multi-line Scalar function"
+	},
+	"sql - MS DEFAULT": {
+		"prefix": "sql-msdf",
+		"body": [
+			"ALTER TABLE [$1].[$2]",
+			"ADD CONSTRAINT DF_$2_$3 DEFAULT ($4) FOR [$3]",
+			"GO"
+		],
+		"description": "Stubs out a new default constraint"
+	},
+	"sql - MS CHECK CONSTRAINT": {
+		"prefix": "sql-msck",
+		"body": [
+			"ALTER TABLE [$1].[$2]",
+			"WITH CHECK ADD CONSTRAINT CK_$2_$3 CHECK (([$3]=$4))",
+			"GO"
+		],
+		"description": "Stubs out a new check constraint"
+	},
+	"sql - MS TRAN TRY": {
+		"prefix": "sql-mstrytx",
+		"body": [
+			"BEGIN TRAN;",
+			"BEGIN TRY",
+			"    $1",
+			"    COMMIT;",
+			"END TRY",
+			"BEGIN CATCH",
+			"    ROLLBACK;",
+			"    THROW;",
+			"END CATCH;"
+		],
+		"description": "stubs out a new try in transaction block"
+	}
+}
+
+// Agradecimentos a:
+// https://github.com/DigitalDuquette/ADS-code-snippets
+// 
